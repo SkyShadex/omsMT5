@@ -1,0 +1,54 @@
+
+
+
+
+//+------------------------------------------------------------------+
+//| Function to calculate covariance matrix                         |
+//+------------------------------------------------------------------+
+void CalculateCovarianceMatrix(double& covarianceMatrix[][MAX_ASSETS], const int assetsCount, const int historySize)
+{
+   ArrayResize(covarianceMatrix, assetsCount, assetsCount);
+
+   // Load historical price data for each asset into a 2D array
+   double priceData[MAX_ASSETS][];
+   for (int i = 0; i < assetsCount; i++)
+   {
+      ArraySetAsSeries(priceData[i], true);
+      CopyClose(allocationData[i][0], 0, historySize, priceData[i]);
+   }
+
+   // Calculate mean returns
+   double meanReturns[MAX_ASSETS];
+   for (int i = 0; i < assetsCount; i++)
+      meanReturns[i] = ArraySum(priceData[i]) / historySize;
+
+   // Calculate covariance matrix
+   for (int i = 0; i < assetsCount; i++)
+   {
+      for (int j = 0; j < assetsCount; j++)
+      {
+         double covariance = 0.0;
+         for (int k = 0; k < historySize; k++)
+            covariance += (priceData[i][k] - meanReturns[i]) * (priceData[j][k] - meanReturns[j]);
+
+         covarianceMatrix[i][j] = covariance / (historySize - 1);
+      }
+   }
+}
+
+// Example usage
+void OnStart()
+{
+   // Define parameters
+   const int assetsCount = 3; // Replace with the actual number of assets in your portfolio
+   const int historySize = 100; // Replace with the desired historical data size
+
+   // Declare the covariance matrix
+   double covarianceMatrix[MAX_ASSETS][MAX_ASSETS];
+
+   // Calculate the covariance matrix
+   CalculateCovarianceMatrix(covarianceMatrix, assetsCount, historySize);
+
+   // Access elements of the covariance matrix as needed
+   Print("Covariance between Asset 1 and Asset 2: ", covarianceMatrix[0][1]);
+}
